@@ -9,7 +9,7 @@ namespace ContosoUniversity.DAL
         public SchoolContext() : base("SchoolContextHome")
         {
         }
-
+        public DbSet<Person> People { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Enrollment> Enrollments { get; set; }
@@ -27,6 +27,7 @@ namespace ContosoUniversity.DAL
                 .Map(t => t.MapLeftKey("CourseID")
                            .MapRightKey("InstructorID")
                            .ToTable("CourseInstructor"));
+            modelBuilder.Entity<Department>().MapToStoredProcedures();
         }
     }
 }
