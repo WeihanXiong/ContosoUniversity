@@ -13,9 +13,17 @@ namespace ContosoUniversity.Controllers
         private SchoolContext db = new SchoolContext();
 
         // GET: Course
-        public ActionResult Index()
+        public ActionResult Index(int? SelectedDepartment)
         {
-            var courses = db.Courses.Include(c => c.Department);
+            var departments = db.Departments.OrderBy(q => q.Name).ToList();
+            ViewBag.SelectedDepartment = new SelectList(departments, "DepartmentID", "Name", SelectedDepartment);
+            int departmentID = SelectedDepartment.GetValueOrDefault();
+
+            IQueryable<Course> courses = db.Courses
+                .Where(c => !SelectedDepartment.HasValue || c.DepartmentID == departmentID)
+                .OrderBy(d => d.CourseID)
+                .Include(d => d.Department);
+
             return View(courses.ToList());
         }
 
@@ -145,6 +153,22 @@ namespace ContosoUniversity.Controllers
                 db.Dispose();
             }
             base.Dispose(disposing);
+        }
+
+        public ActionResult UpdateCourseCredits()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult UpdateCourseCredits(int? multiplier)
+        {
+            if (multiplier != null)
+            {
+                ViewBag.RowsAffected = db.Database.ExecuteSqlCommand(
+                    "UPDATE school.Course SET Credits = Credits * {0}", multiplier);
+            }
+            return View();
         }
     }
 }
